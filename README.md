@@ -26,11 +26,15 @@ npm run check
 
 `npm run check` validates the public data contract, regenerates the coverage-bias report, builds both deployment targets, runs model/server tests, and tests the rendered product in desktop and mobile Chromium.
 
+`npm run deploy:pages` runs that full suite before publishing the static Pages
+build. A separate production smoke workflow then compares the live dataset
+byte-for-byte with the release commit.
+
 ## Evidence and publication boundary
 
 The public payload contains county geometry, 2020 Census population, anonymous draft/filter attributes, and source citations. It excludes player names, high-school names, copied biography text, and annual player-school source tables. See [METHODOLOGY.md](METHODOLOGY.md), [DATA_QUALITY.md](DATA_QUALITY.md), and [ATTRIBUTION.md](ATTRIBUTION.md).
 
-This repository is private for owner review. Public release is pending approval.
+This is the public source repository for the published interactive map.
 
 ## License
 
