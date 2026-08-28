@@ -54,6 +54,7 @@ export type FilterState = {
 
 export const RATE_MIN_COUNT = 5;
 export const PRO_BOWL_MATURE_YEAR_MAX = 2019;
+export const UNAUDITED_CONFERENCE_YEAR = 2026;
 
 export const DEFAULT_FILTERS: FilterState = {
   year: "2015-2026",
@@ -213,7 +214,7 @@ export function parseFiltersFromSearch(
   const metric = query.get("metric");
   const geography = query.get("geography");
   const round = query.get("round");
-  return {
+  return normalizeConferenceBoundary({
     year: validYearScope(query.get("year")),
     geography:
       geography === "all_mapped" ? "all_mapped" : DEFAULT_FILTERS.geography,
@@ -227,25 +228,26 @@ export function parseFiltersFromSearch(
       metric && metric in METRIC_LABELS
         ? (metric as Metric)
         : DEFAULT_FILTERS.metric,
-  };
+  });
 }
 
 export function filtersToQuery(filters: FilterState) {
+  const normalized = normalizeConferenceBoundary(filters);
   const query = new URLSearchParams();
-  if (filters.year !== DEFAULT_FILTERS.year) query.set("year", filters.year);
-  if (filters.geography !== DEFAULT_FILTERS.geography) {
-    query.set("geography", filters.geography);
+  if (normalized.year !== DEFAULT_FILTERS.year) query.set("year", normalized.year);
+  if (normalized.geography !== DEFAULT_FILTERS.geography) {
+    query.set("geography", normalized.geography);
   }
-  if (filters.position !== "all") query.set("position", filters.position);
-  if (filters.round !== "all") query.set("round", filters.round);
-  if (filters.conference !== "all") {
-    query.set("conference", filters.conference);
+  if (normalized.position !== "all") query.set("position", normalized.position);
+  if (normalized.round !== "all") query.set("round", normalized.round);
+  if (normalized.conference !== "all") {
+    query.set("conference", normalized.conference);
   }
-  if (filters.team !== "all") query.set("team", filters.team);
-  if (filters.firstRoundOnly) query.set("first_round", "1");
-  if (filters.proBowlOnly) query.set("pro_bowl", "1");
-  if (filters.metric !== DEFAULT_FILTERS.metric) {
-    query.set("metric", filters.metric);
+  if (normalized.team !== "all") query.set("team", normalized.team);
+  if (normalized.firstRoundOnly) query.set("first_round", "1");
+  if (normalized.proBowlOnly) query.set("pro_bowl", "1");
+  if (normalized.metric !== DEFAULT_FILTERS.metric) {
+    query.set("metric", normalized.metric);
   }
   return query;
 }
@@ -257,30 +259,46 @@ function yearMatches(year: number, scope: string) {
   return year === Number(scope);
 }
 
+export function yearScopeIncludesUnauditedConference(scope: string) {
+  return yearMatches(UNAUDITED_CONFERENCE_YEAR, scope);
+}
+
+export function conferenceFilterUnavailable(scope: string) {
+  return scope === String(UNAUDITED_CONFERENCE_YEAR);
+}
+
+export function normalizeConferenceBoundary(filters: FilterState): FilterState {
+  if (!conferenceFilterUnavailable(filters.year) || filters.conference === "all") {
+    return filters;
+  }
+  return { ...filters, conference: "all" };
+}
+
 export function filterPlayers(players: PlayerRow[], filters: FilterState) {
+  const normalized = normalizeConferenceBoundary(filters);
   return players.filter((player) => {
-    if (!yearMatches(player.year, filters.year)) return false;
+    if (!yearMatches(player.year, normalized.year)) return false;
     if (
-      filters.position !== "all" &&
-      normalString(player.position) !== filters.position
+      normalized.position !== "all" &&
+      normalString(player.position) !== normalized.position
     ) {
       return false;
     }
-    if (filters.round !== "all" && player.round !== Number(filters.round)) {
+    if (normalized.round !== "all" && player.round !== Number(normalized.round)) {
       return false;
     }
     if (
-      filters.conference !== "all" &&
-      normalString(player.conference) !== filters.conference
+      normalized.conference !== "all" &&
+      normalString(player.conference) !== normalized.conference
     ) {
       return false;
     }
-    if (filters.team !== "all" && normalString(player.team) !== filters.team) {
+    if (normalized.team !== "all" && normalString(player.team) !== normalized.team) {
       return false;
     }
-    if (filters.firstRoundOnly && player.round !== 1) return false;
+    if (normalized.firstRoundOnly && player.round !== 1) return false;
     if (
-      filters.proBowlOnly &&
+      normalized.proBowlOnly &&
       (player.year > PRO_BOWL_MATURE_YEAR_MAX || player.proBowls < 1)
     ) {
       return false;

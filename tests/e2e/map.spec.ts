@@ -52,6 +52,28 @@ test("year filters recalculate evidence coverage", async ({ page }) => {
   await expect(coverage).toContainText("Not shown in this view2");
 });
 
+test("the pending 2026 conference audit cannot produce misleading named results", async ({ page }) => {
+  await ready(page);
+  const conference = page.getByLabel("NCAA conference");
+  await conference.selectOption("Southeastern Conference");
+  await expect(
+    page.getByText(/Named-conference results exclude the entire 2026 class/),
+  ).toBeVisible();
+
+  await page.getByLabel("Draft period").selectOption("2026");
+  await expect(conference).toBeDisabled();
+  await expect(conference).toHaveValue("all");
+  await expect(conference).toContainText("2026 audit pending");
+  await expect(page).toHaveURL(/\?year=2026$/);
+  await expect(
+    page.getByText(/Conference filtering is unavailable for 2026/),
+  ).toBeVisible();
+
+  const coverage = page.getByRole("region", { name: "Current selection coverage" });
+  await expect(coverage).toContainText("Eligible draft picks257");
+  await expect(coverage).toContainText("Mapped in this view255");
+});
+
 test("historical high-school view explains why the map is empty", async ({ page }) => {
   await ready(page);
   await page.getByLabel("Draft period").selectOption("2000-2014");

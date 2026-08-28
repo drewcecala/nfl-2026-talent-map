@@ -21,8 +21,10 @@ import {
   PRO_BOWL_MATURE_YEAR_MAX,
   RATE_INSUFFICIENT_COLOR,
   RATE_MIN_COUNT,
+  UNAUDITED_CONFERENCE_YEAR,
   buildCountyStats,
   colorScale,
+  conferenceFilterUnavailable,
   eligiblePlayersForMetric,
   filtersToQuery,
   filterPlayers,
@@ -30,6 +32,7 @@ import {
   geographyLabel,
   legendBins,
   metricValue,
+  normalizeConferenceBoundary,
   number,
   oneDecimal,
   optionValues,
@@ -38,6 +41,7 @@ import {
   playersForGeography,
   summarizeCoverageByEra,
   twoDecimals,
+  yearScopeIncludesUnauditedConference,
 } from "./model";
 import type {
   CountyMeta,
@@ -396,6 +400,8 @@ function SelectFilter({
   allLabel = "All",
   includeAll = true,
   valueLabels = {},
+  description,
+  disabled = false,
   onChange,
 }: {
   id: string;
@@ -405,14 +411,19 @@ function SelectFilter({
   allLabel?: string;
   includeAll?: boolean;
   valueLabels?: Record<string, string>;
+  description?: string;
+  disabled?: boolean;
   onChange: (value: string) => void;
 }) {
+  const descriptionId = description ? `${id}-description` : undefined;
   return (
     <label className="filter-field" htmlFor={id}>
       <span>{label}</span>
       <select
         id={id}
         value={value}
+        aria-describedby={descriptionId}
+        disabled={disabled}
         onChange={(event) => onChange(event.target.value)}
       >
         {includeAll ? <option value="all">{allLabel}</option> : null}
@@ -422,6 +433,11 @@ function SelectFilter({
           </option>
         ))}
       </select>
+      {description ? (
+        <small className="filter-help" id={descriptionId}>
+          {description}
+        </small>
+      ) : null}
     </label>
   );
 }
@@ -528,7 +544,9 @@ export function NFLTalentMap() {
 
   const update = useCallback(
     <Key extends keyof FilterState>(key: Key, value: FilterState[Key]) => {
-      setFilters((current) => ({ ...current, [key]: value }));
+      setFilters((current) =>
+        normalizeConferenceBoundary({ ...current, [key]: value }),
+      );
       setPinnedCounty(null);
     },
     [],
@@ -618,6 +636,18 @@ export function NFLTalentMap() {
   const rounds = [...new Set(data.players.map((player) => player.round))]
     .sort((a, b) => a - b)
     .map(String);
+  const conferenceUnavailable = conferenceFilterUnavailable(filters.year);
+  const scopeIncludesUnauditedConference =
+    yearScopeIncludesUnauditedConference(filters.year);
+  const conferenceHelp = conferenceUnavailable
+    ? `Conference filtering is unavailable for ${UNAUDITED_CONFERENCE_YEAR}. Every ${UNAUDITED_CONFERENCE_YEAR} conference value remains unaudited and is kept as Unknown.`
+    : scopeIncludesUnauditedConference && filters.conference === "Unknown"
+      ? `Unknown / unaudited includes the entire ${UNAUDITED_CONFERENCE_YEAR} class; named conference membership for that class has not been assigned.`
+      : scopeIncludesUnauditedConference && filters.conference !== "all"
+        ? `Named-conference results exclude the entire ${UNAUDITED_CONFERENCE_YEAR} class because its draft-year membership audit is pending.`
+        : scopeIncludesUnauditedConference
+          ? `Conference labels are audited through ${UNAUDITED_CONFERENCE_YEAR - 1}. The ${UNAUDITED_CONFERENCE_YEAR} class remains in All as unaudited Unknown.`
+          : "Conference labels are audited for this draft period.";
   const outcomeWindowLimited =
     filters.metric === "pro_bowl" || filters.proBowlOnly;
   const pre2015HighSchoolGap =
@@ -876,7 +906,19 @@ export function NFLTalentMap() {
               id="filter-conference"
               label="NCAA conference"
               value={filters.conference}
-              values={optionValues(data.players, "conference")}
+              values={
+                conferenceUnavailable
+                  ? []
+                  : optionValues(data.players, "conference")
+              }
+              allLabel={
+                conferenceUnavailable
+                  ? `${UNAUDITED_CONFERENCE_YEAR} audit pending`
+                  : "All"
+              }
+              valueLabels={{ Unknown: "Unknown / unaudited" }}
+              description={conferenceHelp}
+              disabled={conferenceUnavailable}
               onChange={(value) => update("conference", value)}
             />
             <SelectFilter

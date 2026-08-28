@@ -14,12 +14,13 @@ The complete population is retained: 5,212 selections are county-mapped, 144 are
 - **Era measurement break — high:** pre-2015 mapped records represent birth county, while most post-2015 mapped records represent high-school county. Control: default to 2015–2026 verified high school and warn on mixed-evidence views.
 - **Selection-round gradient — medium:** first-round coverage is 79.3%; seventh-round coverage is 71.6%. Control: recalculate and display coverage after every filter.
 - **Position/taxonomy gradient — medium:** coverage varies by listed position and the source taxonomy changes over time. Control: do not interpret raw position differences as causal geography effects.
+- **2026 conference boundary — medium:** all 257 selections from 2026 remain `Unknown` because a draft-year NCAA membership audit is not present in the public evidence. Control: disable exact-year 2026 conference filtering, disclose when named-conference filters exclude 2026, and never infer membership from prior-year labels.
 - **Small-denominator rate instability — high:** one-player counties can dominate naive per-capita rankings. Control: require five mapped selections for rate ranking and visually separate smaller counts.
 - **Outcome right-censoring and coverage — high:** recent careers have less time to accumulate honors. Within classes through 2019, county coverage is 75.6% for Pro Bowl players and 68.4% for other selections. Control: restrict Pro Bowl analysis to mature classes, disclose the coverage difference, treat mapped outcome counts as descriptive, and omit Hall of Fame comparisons.
 
 The 2026 class uses an official 257-pick high-school table and conservative exact/reviewed school-location matching: 255 selections are mapped to high-school counties, one international pathway record is outside the map, and one player who did not play high-school football remains unresolved. No 2026 birth fallback or prior-year conference label is inferred.
 
-The machine-readable audit is regenerated at `reports/coverage-audit.json`. `npm run validate:data` fails on changed population counts, duplicate draft keys, invalid evidence partitions, unknown county keys, nonpositive populations, geometry/reference disagreement, or accidental publication of identity fields.
+The machine-readable audit is regenerated at `reports/coverage-audit.json`. `npm run validate:data` fails on changed population counts, duplicate draft keys, invalid evidence partitions, unknown county keys, nonpositive populations, geometry/reference disagreement, a partial or inferred 2026 conference assignment, or accidental publication of identity fields.
 
 ## What the map does not claim
 

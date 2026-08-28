@@ -56,6 +56,9 @@ function groupRows(rows, valueForRow) {
 
 export function buildCoverageAudit(data) {
   const players = data.players;
+  const unauditedConferenceRows = players.filter(
+    (row) => row.year === 2026 && (row.conference || "Unknown") === "Unknown",
+  );
   const byEra = [
     summarize(
       players.filter((row) => row.year >= 2000 && row.year <= 2014),
@@ -121,6 +124,13 @@ export function buildCoverageAudit(data) {
     byTeam,
     byConference,
     byOutcome,
+    conferenceBoundary: {
+      auditedThroughDraftYear: 2025,
+      unauditedDraftYear: 2026,
+      unauditedRows: unauditedConferenceRows.length,
+      treatment:
+        "Exact-year 2026 conference filtering is disabled; named-conference filters spanning 2026 exclude the unaudited class.",
+    },
     riskFindings: [
       {
         id: "era_measurement_break",
@@ -135,6 +145,19 @@ export function buildCoverageAudit(data) {
           "The pre-2015 mapped population uses birth-county fallback rather than verified high-school county, so cross-era county comparisons do not use one stable geography definition.",
         control:
           "Default the product to the 2015-2026 verified-high-school view and label the all-years fallback view as mixed evidence.",
+      },
+      {
+        id: "2026_conference_audit_incomplete",
+        severity: "medium",
+        evidence: {
+          auditedThroughDraftYear: 2025,
+          unauditedDraftYear: 2026,
+          unauditedRows: unauditedConferenceRows.length,
+        },
+        interpretation:
+          "The 2026 class has no completed draft-year NCAA membership audit, so named-conference summaries cannot include that class without inference.",
+        control:
+          "Keep 2026 conference values Unknown, disable the exact-year conference filter, and disclose that named-conference filters spanning 2026 exclude the class.",
       },
       {
         id: "round_coverage_gradient",

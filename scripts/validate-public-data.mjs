@@ -83,10 +83,30 @@ assert.equal(data.meta.mappedPlayers, 5_212);
 assert.equal(data.meta.unresolvedPlayers, 1_545);
 assert.equal(data.meta.outsideMapPlayers, 144);
 
+const players2026 = data.players.filter((row) => row.year === 2026);
+assert.equal(players2026.length, 257);
+assert.ok(
+  players2026.every((row) => row.conference === "Unknown"),
+  "2026 conference values must remain Unknown until the draft-year audit is complete",
+);
+assert.match(data.meta.conferenceDefinition, /audited through 2025/i);
+assert.match(data.meta.conferenceDefinition, /All 257 selections from 2026 remain Unknown/);
+
 for (const source of data.meta.sources) {
   assert.ok(source.label.trim());
   assert.match(source.url, /^https:\/\//);
 }
+const sourceUrls = new Map(
+  data.meta.sources.map((source) => [source.label, source.url]),
+);
+assert.equal(
+  sourceUrls.get("U.S. Census Bureau"),
+  "https://www.census.gov/geographies/mapping-files/2020/geo/carto-boundary-file.html",
+);
+assert.equal(
+  sourceUrls.get("NCAA historical membership"),
+  "https://www.ncaa.org/about-us/membership-directory/",
+);
 
 const audit = buildCoverageAudit(data);
 assert.deepEqual(

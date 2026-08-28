@@ -77,3 +77,25 @@ test("URL filters are validated and serialize non-default state", () => {
   assert.equal(parsed.metric, "per_capita");
   assert.equal(filtersToQuery(parsed).toString(), "year=2025&geography=all_mapped&round=1&metric=per_capita");
 });
+
+test("the unaudited 2026 conference boundary cannot create false empty results", () => {
+  const requested = {
+    ...DEFAULT_FILTERS,
+    year: "2026",
+    conference: "Southeastern Conference",
+  };
+  const parsed = parseFiltersFromSearch(
+    "?year=2026&conference=Southeastern+Conference",
+    data.players,
+  );
+
+  assert.equal(parsed.year, "2026");
+  assert.equal(parsed.conference, "all");
+  assert.equal(filtersToQuery(requested).toString(), "year=2026");
+  assert.equal(filterPlayers(data.players, requested).length, 257);
+  assert.ok(
+    data.players
+      .filter((player) => player.year === 2026)
+      .every((player) => player.conference === "Unknown"),
+  );
+});

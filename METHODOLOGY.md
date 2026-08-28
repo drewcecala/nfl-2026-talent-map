@@ -24,7 +24,7 @@ The product therefore defaults to the 2015–2026 verified-high-school view. The
 
 ## Conference boundary
 
-Conference means the NCAA general institutional affiliation for the academic year ending in the draft year, not a football-only conference. Unsupported or multiple affiliations are labeled `Unknown`. The 2026 class remains `Unknown` until its draft-year NCAA membership audit is complete; prior-year labels are not inferred.
+Conference means the NCAA general institutional affiliation for the academic year ending in the draft year, not a football-only conference. Unsupported or multiple affiliations are labeled `Unknown`. Conference labels are audited through the 2025 draft. All 257 selections from 2026 remain `Unknown` because the public repository does not contain a completed draft-year NCAA membership audit; prior-year labels are not inferred. The exact-year 2026 conference filter is disabled, and named-conference filters spanning 2026 exclude that class.
 
 ## Measures
 

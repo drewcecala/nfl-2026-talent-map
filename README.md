@@ -2,6 +2,8 @@
 
 A county-level recruiting and NFL Draft geography project covering all 6,901 selections from 2000–2026. The interactive product defaults to verified high-school counties for 2015–2026 because that is the comparable development-location era. The complete historical audit remains available as a clearly labeled mixed-evidence view.
 
+[Explore the live interactive map](https://nfl-talent-geography.pages.dev/nfl-talent-map).
+
 ## What the product does
 
 - Maps verified high-school counties, with optional independently corroborated birth-county fallbacks.
@@ -29,6 +31,14 @@ npm run check
 `npm run deploy:pages` runs that full suite before publishing the static Pages
 build. A separate production smoke workflow then compares the live dataset
 byte-for-byte with the release commit.
+
+## Conference-data boundary
+
+Conference labels are audited through the 2025 draft. All 257 selections from
+2026 remain `Unknown` until a draft-year NCAA membership audit is complete;
+prior-year labels are not inferred. The exact-year 2026 conference filter is
+therefore disabled, and named-conference filters spanning 2026 exclude that
+class.
 
 ## Evidence and publication boundary
 
