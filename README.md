@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/readme-hero.png" alt="American football talent pathways visualized across a county map" width="100%">
+</p>
+
 # The Geography of NFL Talent
 
 A county-level recruiting and NFL Draft geography project covering all 6,901 selections from 2000–2026. The interactive product defaults to verified high-school counties for 2015–2026 because that is the comparable development-location era. The complete historical audit remains available as a clearly labeled mixed-evidence view.
